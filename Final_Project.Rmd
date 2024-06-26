@@ -8,20 +8,33 @@ date: "2024-06-24"
 ```{r}
 library(tidyverse)
 library(zoo)
+library(stm)
 ```
 
 
 ```{r download csv files}
-report <- read.csv("report.csv")
+report <- read.csv("google_trends_report.csv")
 crime <- read.csv("crime.csv")
-welfare <- read.csv("welfare.csv")
+welfare <- read.csv("google_trends_welfare.csv")
 ```
 
 ```{r adding easier to understand colummns}
-colnames(report) <- c("ym", "trends")
-colnames(crime) <- c("ym", "trends")
-colnames(welfare) <- c("ym", "trends")
+colnames(report) <- c("y", "m" ,"trends")
+colnames(crime) <- c("y", "m","trends")
+colnames(welfare) <- c("y", "m","trends")
 ```
+
+```{r only for the og dataset}
+report$ym <- with(report, sprintf("%d-%02d", y, m))
+crime$ym <- with(crime, sprintf("%d-%02d", y, m))
+welfare$ym <- with(welfare, sprintf("%d-%02d", y, m))
+
+
+report <- report |> select(ym, trends)
+crime <- crime |> select(ym, trends)
+welfare <- welfare |> select(ym, trends)
+```
+
 
 
 ```{r function to change year-month to year-month-date}
@@ -99,8 +112,8 @@ plot_4(welfare, 0, 100)
 
 ```{r regression model}
 fit.report <- lm(trends~ymd+bush+trump+obama, data=report |> filter(trends > 0))
-fit.crime <- lm(trends~bush+trump+obama, data=crime |> filter(trends > 0))
-fit.welfare <- lm(trends~bush+trump+obama, data=welfare |> filter(trends > 0))
+fit.crime <- lm(trends~ymd+bush+trump+obama, data=crime |> filter(trends > 0))
+fit.welfare <- lm(trends~ymd+bush+trump+obama, data=welfare |> filter(trends > 0))
 summary(fit.report)
 summary(fit.crime)
 summary(fit.welfare)
@@ -108,7 +121,6 @@ summary(fit.welfare)
 
 
 ```{r topic model}
-library(stm)
 load("TopicModel.RData")
 document_topics <- make.dt(immigrFit, meta = out$meta)
 topic_terms <- t(exp(immigrFit$beta$logbeta[[1]]))
