@@ -198,15 +198,31 @@ daily <- read.csv("gt_report_daily.csv") |> select(date, search, search_adj) |> 
 ```{r}
 filtered_topics <- document_topics |> 
   select(date, channel, duration, Topic1, Topic3, Topic13) |> group_by(date) |> 
-  summarize(Topic1=sum(Topic1 * duration), Topic3=sum(Topic3 * duration), Topic13=sum(Topic13 * duration))
+  summarize(duration=sum(duration), Topic1and3=sum(Topic1 * duration + Topic3 * duration), Topic13=sum(Topic13 * duration))
 ```
 
 ```{r}
-filtered_topics |> inner_join(daily, join_by(date)) 
+filtered_topics <- filtered_topics |> inner_join(daily, join_by(date)) 
 ```
 
 ```{r}
+  bush_end <- as.Date("2009-01-20")
+  trump_start <- as.Date("2017-01-20")
+  
+  filtered_topics$president <- 
+    ifelse(filtered_topics$date >= bush_end & filtered_topics$date < trump_start, "obama", 
+           ifelse(filtered_topics$date < bush_end, "bush", "trump")) 
+  
+  filtered_topics$bush <- 
+    ifelse(filtered_topics$president == "bush", 1, 0) 
+  filtered_topics$obama <- 
+    ifelse(filtered_topics$president == "obama", 1, 0) 
+  filtered_topics$trump <- 
+    ifelse(filtered_topics$president == "trump", 1, 0) 
 
+
+fit.coverage <- lm(search_adj~duration+Topic1and3+Topic13+trump+date, data=filtered_topics)
+summary(fit.coverage)
 ```
 
 
