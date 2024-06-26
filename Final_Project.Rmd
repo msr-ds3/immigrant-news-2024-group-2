@@ -1,6 +1,6 @@
 ---
 title: "DS3 projects"
-author: "Matthew Munoz"
+author: "Matthew Munoz and Fabio Pecora"
 output: html_document
 date: "2024-06-24"
 ---
