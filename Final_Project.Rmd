@@ -14,7 +14,7 @@ library(stm)
 
 ```{r download csv files}
 report <- read.csv("google_trends_report.csv")
-crime <- read.csv("crime.csv")
+crime <- read.csv("google_trends_crime.csv")
 welfare <- read.csv("google_trends_welfare.csv")
 ```
 
@@ -189,7 +189,25 @@ plot_3b_table |> ungroup() |>
   geom_point() + geom_smooth( se=FALSE) + scale_color_manual(values = my_colors) +
     theme(axis.title.x = element_blank(), legend.position = "bottom", legend.title = element_blank()) +
   ylab("Immiger Welfare\nNew Coverage") 
-``````
+```
+
+```{r importing daily data}
+daily <- read.csv("gt_report_daily.csv") |> select(date, search, search_adj) |>  mutate(date=as.Date(date))
+```
+
+```{r}
+filtered_topics <- document_topics |> 
+  select(date, channel, duration, Topic1, Topic3, Topic13) |> group_by(date) |> 
+  summarize(Topic1=sum(Topic1 * duration), Topic3=sum(Topic3 * duration), Topic13=sum(Topic13 * duration))
+```
+
+```{r}
+filtered_topics |> inner_join(daily, join_by(date)) 
+```
+
+```{r}
+
+```
 
 
 
