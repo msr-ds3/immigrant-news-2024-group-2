@@ -55,6 +55,7 @@ add_date <- function(df) {
   # formats the data to have the date as a date 
   df <- df |>  
     mutate(ymd=as.Date(paste(ym, "-20", sep=""))) |> 
+    select(-ym)
   }
 ```
 
@@ -96,7 +97,7 @@ plot_4 <- function(df, start, end) {
 }
 ```
 
-## runnning above gunction 
+## runnning above gunction
 
 ```{r add date to data frames}
 report <- add_date(report) 
@@ -241,8 +242,19 @@ vs <- read.csv("fearvssuccess.csv")
 
 colnames(vs) <- c("ym" ,"fear", "success")
 
-add_date(vs)
+prop_no_outlier <- vs |> add_date() |> add_pres() |> zero_or_one() |> 
+  mutate(proportion=(fear/success+fear) |> 
+           filter(fear > 0 & success > 0 & ymd != "2018-06-20") |>
+           group_by(president) |> summarise(mean=mean(proportion))
+
+#prop_outlier <- vs |> add_date() |> add_pres() |> zero_or_one() |> 
+ # mutate(proportion=(fear/success+fear) |> 
+  #         filter(fear > 0 & success > 0 & ymd != "2018-06-20") |> 
+   #        group_by(president) |> 
+    #       summarise(mean=mean(proportion))
 ```
 
-
+```{r}
+prop_outlier |> ggplot(aes( mean)) + geom_bar()
+```
 
