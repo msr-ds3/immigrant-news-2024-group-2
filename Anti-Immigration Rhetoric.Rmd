@@ -243,18 +243,47 @@ vs <- read.csv("fearvssuccess.csv")
 colnames(vs) <- c("ym" ,"fear", "success")
 
 prop_no_outlier <- vs |> add_date() |> add_pres() |> zero_or_one() |> 
-  mutate(proportion=(fear/success+fear) |> 
-           filter(fear > 0 & success > 0 & ymd != "2018-06-20") |>
+  mutate(proportion=(fear/(success+fear))) |> 
+           filter(fear > 0 & success > 0) |>
            group_by(president) |> summarise(mean=mean(proportion))
 
-#prop_outlier <- vs |> add_date() |> add_pres() |> zero_or_one() |> 
- # mutate(proportion=(fear/success+fear) |> 
-  #         filter(fear > 0 & success > 0 & ymd != "2018-06-20") |> 
-   #        group_by(president) |> 
-    #       summarise(mean=mean(proportion))
+prop_outlier <- vs |> add_date() |> add_pres() |> zero_or_one() |> 
+  mutate(proportion=(fear/(success+fear))) |> 
+           filter(fear > 0 & success > 0 & ymd != "2018-06-20") |> 
+           group_by(president) |> 
+           summarise(mean=mean(proportion))
 ```
 
 ```{r}
-prop_outlier |> ggplot(aes( mean)) + geom_bar()
+
+ggplot(prop_outlier, aes(x = president, y = mean, fill = president)) +
+  geom_bar(stat = "identity", width = 0.5) +
+  labs(
+    title = "Mean Values of Presidents' Immigration Policies",
+    x = "President",
+    y = "Mean Value"
+  )
+
+
+
+ggplot(prop_no_outlier, aes(x = president, y = mean, fill = president)) +
+  geom_bar(stat = "identity", width = 0.5) +
+  labs(
+    title = "Mean Values of Presidents' Immigration Policies",
+    x = "President",
+    y = "Mean Value"
+  )
+
+```
+
+```{r}
+vs|>
+  ggplot(aes(x = ym, y = fear)) +
+    geom_line() +
+    theme_minimal()
+
+
+
+
 ```
 
