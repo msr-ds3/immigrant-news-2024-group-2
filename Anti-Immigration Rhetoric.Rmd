@@ -315,14 +315,14 @@ state_abbreviations <- data.frame(
 )
 
 
-map <- map %>%
+map2 <- map %>%
   left_join(state_abbreviations, by = c("state" = "abbreviation")) %>%
   rename(region = state.y)
 
 states_map <- map_data("state")
 
 
-map_data <- left_join(states_map, map, by = "region")
+map_data <- left_join(states_map, map2, by = "region") |>  mutate(success = ifelse(is.na(success), 0, success))
 
 head(map_data)
 
