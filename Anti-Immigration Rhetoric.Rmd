@@ -13,6 +13,10 @@ date: "2024-06-24"
 library(tidyverse)
 library(zoo)
 library(stm)
+library(ggplot2)
+library(maps)
+library(dplyr)
+library(stringr)
 ```
 
 ## Original data set to run by default
@@ -239,6 +243,7 @@ summary(fit.coverage)
 
 ```{r}
 vs <- read.csv("fearvssuccess.csv")
+map <- read.csv("fearvssuccess_geo.csv")
 
 colnames(vs) <- c("ym" ,"fear", "success")
 
@@ -264,7 +269,7 @@ ggplot(prop_outlier, aes(x = president, y = mean, fill = president)) +
     y = "Mean Value"
   )
 
-
+vs
 
 ggplot(prop_no_outlier, aes(x = president, y = mean, fill = president)) +
   geom_bar(stat = "identity", width = 0.5) +
@@ -277,13 +282,57 @@ ggplot(prop_no_outlier, aes(x = president, y = mean, fill = president)) +
 ```
 
 ```{r}
-vs|>
-  ggplot(aes(x = ym, y = fear)) +
-    geom_line() +
-    theme_minimal()
+
+map <- map %>%
+  mutate(
+    state = str_extract(Metro, "[A-Z]{2}$"),
+    fear = as.numeric(str_replace(fear, "%", ""))
+  )
 
 
+state_abbreviations <- data.frame(
+  abbreviation = c(
+    "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
+    "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
+    "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ",
+    "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
+    "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"
+  ),
+  state = tolower(c(
+    "Alabama", "Alaska", "Arizona", "Arkansas", "California",
+    "Colorado", "Connecticut", "Delaware", "Florida", "Georgia",
+    "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas",
+    "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts",
+    "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana",
+    "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico",
+    "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma",
+    "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", 
+    "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", 
+    "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"
+  ))
+)
 
+
+map <- map %>%
+  left_join(state_abbreviations, by = c("state" = "abbreviation")) %>%
+  rename(region = state.y) 
+
+
+states_map <- map_data("state")
+
+
+map_data <- left_join(states_map, map, by = "region")
+
+
+head(map_data)
+
+
+ggplot(map_data, aes(x = long, y = lat, group = group, fill = fear)) +
+  geom_polygon(color = "black") +
+  scale_fill_gradient(name = "Fear (%)", low = "lightblue", high = "darkblue", na.value = "grey90") +
+  coord_fixed(1.3) +
+  labs(title = "Fear Percentage by State") +
+  theme_minimal()
 
 ```
 
