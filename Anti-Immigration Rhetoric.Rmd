@@ -287,7 +287,8 @@ ggplot(prop_no_outlier, aes(x = president, y = mean, fill = president)) +
 map <- map %>%
   mutate(
     state = str_extract(Metro, "[A-Z]{2}$"),
-    fear = as.numeric(str_replace(fear, "%", ""))
+    fear = as.numeric(str_replace(fear, "%", "")),
+    success = as.numeric(str_replace(success, "%", ""))
   )
 
 
@@ -316,13 +317,12 @@ state_abbreviations <- data.frame(
 
 map <- map %>%
   left_join(state_abbreviations, by = c("state" = "abbreviation")) %>%
-  rename(region = state.y) 
+  rename(region = state.y)
 
 states_map <- map_data("state")
 
 
 map_data <- left_join(states_map, map, by = "region")
-
 
 head(map_data)
 
@@ -333,5 +333,13 @@ ggplot(map_data, aes(x = long, y = lat, group = group, fill = fear)) +
   coord_fixed(1.3) +
   labs(title = "Fear Percentage by State") +
   theme_minimal()
+
+ggplot(map_data, aes(x = long, y = lat, group = group, fill = success)) +
+  geom_polygon(color = "black") +
+  scale_fill_gradient(name = "Fear (%)", low = "lightblue", high = "darkblue", na.value = "grey90") +
+  coord_fixed(1.3) +
+  labs(title = "Fear Percentage by State") +
+  theme_minimal()
+
 ```
 
