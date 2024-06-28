@@ -283,6 +283,7 @@ ggplot(prop_no_outlier, aes(x = president, y = mean, fill = president)) +
 
 ```{r}
 
+
 map <- map %>%
   mutate(
     state = str_extract(Metro, "[A-Z]{2}$"),
@@ -317,7 +318,6 @@ map <- map %>%
   left_join(state_abbreviations, by = c("state" = "abbreviation")) %>%
   rename(region = state.y) 
 
-
 states_map <- map_data("state")
 
 
@@ -333,6 +333,5 @@ ggplot(map_data, aes(x = long, y = lat, group = group, fill = fear)) +
   coord_fixed(1.3) +
   labs(title = "Fear Percentage by State") +
   theme_minimal()
-
 ```
 
