@@ -269,8 +269,6 @@ ggplot(prop_outlier, aes(x = president, y = mean, fill = president)) +
     y = "Mean Value"
   )
 
-vs
-
 ggplot(prop_no_outlier, aes(x = president, y = mean, fill = president)) +
   geom_bar(stat = "identity", width = 0.5) +
   labs(
@@ -279,7 +277,22 @@ ggplot(prop_no_outlier, aes(x = president, y = mean, fill = president)) +
     y = "Mean Value"
   )
 
+
 ```
+
+```{r}
+vs <- vs %>%
+  mutate(ymd = ymd(paste0(ym, "-01")))
+
+ggplot(data = vs, aes(x = ymd)) +
+  geom_line(aes(y = fear, color = "fear")) +
+  geom_line(aes(y = success, color = "success")) +
+  labs(y = "Values", color = "Legend") +
+  theme_minimal()
+  
+```
+
+
 
 ```{r}
 
@@ -336,7 +349,7 @@ ggplot(map_data, aes(x = long, y = lat, group = group, fill = fear)) +
 
 ggplot(map_data, aes(x = long, y = lat, group = group, fill = success)) +
   geom_polygon(color = "black") +
-  scale_fill_gradient(name = "Fear (%)", low = "lightblue", high = "darkblue", na.value = "grey90") +
+  scale_fill_gradient(name = "Success (%)", low = "lightblue", high = "darkblue", na.value = "grey90") +
   coord_fixed(1.3) +
   labs(title = "Fear Percentage by State") +
   theme_minimal()
