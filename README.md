@@ -21,3 +21,6 @@ We aim to reproduce the original research investigating the potential influence 
 
 ## Results
 The results of the reproduction and extension can be seen here 
+
+## Resources 
+[Google Trends](https://trends.google.com/trends/explore?geo=US&hl=en)
