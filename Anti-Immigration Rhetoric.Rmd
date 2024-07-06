@@ -86,11 +86,11 @@ Creates three new columns, one for each president, that holds dummy variables (i
 zero_or_one <- function(df) {
   # adds three columns, one for each president and subsequently add a 1 when it is their presidency  
   df$bush <- 
-    ifelse(df$president == "bush", 1, 0) 
+    ifelse(df$president == "Bush", 1, 0) 
   df$obama <- 
-    ifelse(df$president == "obama", 1, 0) 
+    ifelse(df$president == "Obama", 1, 0) 
   df$trump <- 
-    ifelse(df$president == "trump", 1, 0) 
+    ifelse(df$president == "Trump", 1, 0) 
   
   return(df)
 }

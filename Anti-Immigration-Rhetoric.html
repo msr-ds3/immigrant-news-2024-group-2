@@ -525,11 +525,11 @@ effectively.</p>
 <pre class="r"><code>zero_or_one &lt;- function(df) {
   # adds three columns, one for each president and subsequently add a 1 when it is their presidency  
   df$bush &lt;- 
-    ifelse(df$president == &quot;bush&quot;, 1, 0) 
+    ifelse(df$president == &quot;Bush&quot;, 1, 0) 
   df$obama &lt;- 
-    ifelse(df$president == &quot;obama&quot;, 1, 0) 
+    ifelse(df$president == &quot;Obama&quot;, 1, 0) 
   df$trump &lt;- 
-    ifelse(df$president == &quot;trump&quot;, 1, 0) 
+    ifelse(df$president == &quot;Trump&quot;, 1, 0) 
   
   return(df)
 }</code></pre>
@@ -631,21 +631,21 @@ summary(fit.report_og)</code></pre>
 ## 
 ## Residuals:
 ##     Min      1Q  Median      3Q     Max 
-## -20.297  -8.376  -1.025   5.402  49.035 
+## -22.050  -5.662  -1.293   4.796  38.482 
 ## 
-## Coefficients: (3 not defined because of singularities)
+## Coefficients: (1 not defined because of singularities)
 ##              Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept) 3.305e+01  7.477e+00   4.421 1.66e-05 ***
-## ymd         1.040e-03  4.854e-04   2.143   0.0334 *  
-## bush               NA         NA      NA       NA    
-## trump              NA         NA      NA       NA    
+## (Intercept) 72.607670  16.108626   4.507 1.16e-05 ***
+## ymd         -0.001789   0.001024  -1.748   0.0821 .  
+## bush         0.785389   2.898559   0.271   0.7867    
+## trump       19.716343   2.787848   7.072 2.99e-11 ***
 ## obama              NA         NA      NA       NA    
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## Residual standard error: 11.17 on 188 degrees of freedom
-## Multiple R-squared:  0.02385,    Adjusted R-squared:  0.01866 
-## F-statistic: 4.593 on 1 and 188 DF,  p-value: 0.03338</code></pre>
+## Residual standard error: 9.601 on 186 degrees of freedom
+## Multiple R-squared:  0.2863, Adjusted R-squared:  0.2748 
+## F-statistic: 24.87 on 3 and 186 DF,  p-value: 1.411e-13</code></pre>
 <pre class="r"><code>summary(fit.crime_og)</code></pre>
 <pre><code>## 
 ## Call:
@@ -654,21 +654,21 @@ summary(fit.report_og)</code></pre>
 ## 
 ## Residuals:
 ##     Min      1Q  Median      3Q     Max 
-## -16.598 -10.398  -3.954   4.037  74.411 
+## -21.526  -7.106  -3.603   3.434  62.727 
 ## 
-## Coefficients: (3 not defined because of singularities)
-##               Estimate Std. Error t value Pr(&gt;|t|)   
-## (Intercept) -1.370e+01  1.053e+01  -1.300  0.19519   
-## ymd          2.282e-03  6.828e-04   3.342  0.00101 **
-## bush                NA         NA      NA       NA   
-## trump               NA         NA      NA       NA   
-## obama               NA         NA      NA       NA   
+## Coefficients: (1 not defined because of singularities)
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) -1.024897  23.183622  -0.044   0.9648    
+## ymd          0.001045   0.001473   0.710   0.4789    
+## bush         8.501543   4.163079   2.042   0.0426 *  
+## trump       20.300850   4.006843   5.067 9.81e-07 ***
+## obama              NA         NA      NA       NA    
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## Residual standard error: 15.54 on 186 degrees of freedom
-## Multiple R-squared:  0.05663,    Adjusted R-squared:  0.05156 
-## F-statistic: 11.17 on 1 and 186 DF,  p-value: 0.001007</code></pre>
+## Residual standard error: 13.78 on 184 degrees of freedom
+## Multiple R-squared:  0.266,  Adjusted R-squared:  0.254 
+## F-statistic: 22.23 on 3 and 184 DF,  p-value: 2.502e-12</code></pre>
 <pre class="r"><code>summary(fit.welfare_og)</code></pre>
 <pre><code>## 
 ## Call:
@@ -677,21 +677,21 @@ summary(fit.report_og)</code></pre>
 ## 
 ## Residuals:
 ##     Min      1Q  Median      3Q     Max 
-## -17.857  -8.655  -3.320   5.145  66.637 
+## -19.966  -7.986  -1.646   4.774  56.953 
 ## 
-## Coefficients: (3 not defined because of singularities)
-##              Estimate Std. Error t value Pr(&gt;|t|)  
-## (Intercept) 1.789e+01  9.366e+00   1.910   0.0576 .
-## ymd         8.985e-04  6.081e-04   1.478   0.1412  
-## bush               NA         NA      NA       NA  
-## trump              NA         NA      NA       NA  
-## obama              NA         NA      NA       NA  
+## Coefficients: (1 not defined because of singularities)
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 28.587926  20.734642   1.379   0.1696    
+## ymd         -0.000178   0.001318  -0.135   0.8927    
+## bush         7.819065   3.730956   2.096   0.0375 *  
+## trump       18.560493   3.588452   5.172 5.95e-07 ***
+## obama              NA         NA      NA       NA    
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## Residual standard error: 13.99 on 188 degrees of freedom
-## Multiple R-squared:  0.01148,    Adjusted R-squared:  0.006223 
-## F-statistic: 2.183 on 1 and 188 DF,  p-value: 0.1412</code></pre>
+## Residual standard error: 12.36 on 186 degrees of freedom
+## Multiple R-squared:  0.237,  Adjusted R-squared:  0.2247 
+## F-statistic: 19.26 on 3 and 186 DF,  p-value: 6.428e-11</code></pre>
 <p><strong>Table 1.</strong> <em>Original immigration searches by
 presidential administration</em><br />
 After accounting for the linear time trend, there was still a clear
@@ -762,21 +762,21 @@ summary(fit.report)</code></pre>
 ## 
 ## Residuals:
 ##     Min      1Q  Median      3Q     Max 
-## -20.618  -7.701  -0.796   5.004  48.463 
+## -20.306  -5.418  -1.076   4.252  38.740 
 ## 
-## Coefficients: (3 not defined because of singularities)
+## Coefficients: (1 not defined because of singularities)
 ##               Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept) 53.7145593  7.2923817   7.366 5.64e-12 ***
-## ymd         -0.0001265  0.0004703  -0.269    0.788    
-## bush                NA         NA      NA       NA    
-## trump               NA         NA      NA       NA    
+## (Intercept) 90.7739107 15.3446130   5.916 1.59e-08 ***
+## ymd         -0.0027952  0.0009751  -2.867  0.00463 ** 
+## bush         1.7209308  2.7105835   0.635  0.52629    
+## trump       18.6115465  2.6314099   7.073 3.11e-11 ***
 ## obama               NA         NA      NA       NA    
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## Residual standard error: 10.58 on 185 degrees of freedom
-## Multiple R-squared:  0.0003907,  Adjusted R-squared:  -0.005013 
-## F-statistic: 0.07231 on 1 and 185 DF,  p-value: 0.7883</code></pre>
+## Residual standard error: 8.991 on 183 degrees of freedom
+## Multiple R-squared:  0.2855, Adjusted R-squared:  0.2738 
+## F-statistic: 24.37 on 3 and 183 DF,  p-value: 2.569e-13</code></pre>
 <pre class="r"><code>summary(fit.crime)</code></pre>
 <pre><code>## 
 ## Call:
@@ -785,21 +785,21 @@ summary(fit.report)</code></pre>
 ## 
 ## Residuals:
 ##     Min      1Q  Median      3Q     Max 
-## -17.193 -10.514  -4.470   4.556  73.338 
+## -22.848  -6.442  -3.853   3.012  63.302 
 ## 
-## Coefficients: (3 not defined because of singularities)
-##               Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept) -3.203e+01  1.461e+01  -2.192 0.029939 *  
-## ymd          3.409e-03  9.148e-04   3.726 0.000275 ***
-## bush                NA         NA      NA       NA    
-## trump               NA         NA      NA       NA    
-## obama               NA         NA      NA       NA    
+## Coefficients: (1 not defined because of singularities)
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 2.887e+00  2.684e+01   0.108   0.9145    
+## ymd         8.249e-04  1.700e-03   0.485   0.6282    
+## bush        9.877e+00  4.661e+00   2.119   0.0357 *  
+## trump       1.961e+01  4.308e+00   4.552  1.1e-05 ***
+## obama              NA         NA      NA       NA    
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## Residual standard error: 15.76 on 150 degrees of freedom
-## Multiple R-squared:  0.08473,    Adjusted R-squared:  0.07863 
-## F-statistic: 13.89 on 1 and 150 DF,  p-value: 0.0002746</code></pre>
+## Residual standard error: 13.97 on 148 degrees of freedom
+## Multiple R-squared:   0.29,  Adjusted R-squared:  0.2757 
+## F-statistic: 20.15 on 3 and 148 DF,  p-value: 5.23e-11</code></pre>
 <pre class="r"><code>summary(fit.welfare)</code></pre>
 <pre><code>## 
 ## Call:
@@ -808,21 +808,21 @@ summary(fit.report)</code></pre>
 ## 
 ## Residuals:
 ##     Min      1Q  Median      3Q     Max 
-## -20.659  -9.366  -4.568   4.867  65.905 
+## -19.880  -7.361  -1.873   4.095  54.921 
 ## 
-## Coefficients: (3 not defined because of singularities)
-##              Estimate Std. Error t value Pr(&gt;|t|)  
-## (Intercept) 2.837e+01  1.233e+01   2.302   0.0226 *
-## ymd         3.324e-04  7.802e-04   0.426   0.6706  
-## bush               NA         NA      NA       NA  
-## trump              NA         NA      NA       NA  
-## obama              NA         NA      NA       NA  
+## Coefficients: (1 not defined because of singularities)
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 47.556981  22.482828   2.115  0.03595 *  
+## ymd         -0.001323   0.001429  -0.926  0.35581    
+## bush        12.125788   3.925027   3.089  0.00236 ** 
+## trump       20.303916   3.781089   5.370 2.71e-07 ***
+## obama              NA         NA      NA       NA    
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## Residual standard error: 14.96 on 163 degrees of freedom
-## Multiple R-squared:  0.001112,   Adjusted R-squared:  -0.005016 
-## F-statistic: 0.1815 on 1 and 163 DF,  p-value: 0.6706</code></pre>
+## Residual standard error: 12.59 on 161 degrees of freedom
+## Multiple R-squared:  0.3006, Adjusted R-squared:  0.2875 
+## F-statistic: 23.06 on 3 and 161 DF,  p-value: 1.799e-12</code></pre>
 <p><strong>Table 2.</strong> <em>Gathered data immigration searches by
 presidential administration</em><br />
 The values from the dependent variables in the self gathered data has
