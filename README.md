@@ -20,7 +20,7 @@ __Original Paper:__ <br/>
 We aim to reproduce the original research investigating the potential influence of political rhetoric surrounding unauthorized immigration. By analyzing search query trends, we seek to understand how presidential pronouncements, from George H.W. Bush to Donald Trump, may shape public perceptions on this critical issue. The paper examines issues associated with immigration, including interactions with ICE, crime, and social programs. The extension explores how more positive Google searches are driven during the same period.
 
 ## Results
-The results of the reproduction and extension can be seen here 
+The results of the reproduction and extension can be seen [here](https://rawcdn.githack.com/msr-ds3/immigrant-news-2024-group-2/6eb79651031292c907755fb1cd3b291c81ac1566/Anti-Immigration-Rhetoric.html)
 
 ## Resources 
 [Google Trends](https://trends.google.com/trends/explore?geo=US&hl=en)
