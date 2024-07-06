@@ -1,83 +1,90 @@
 ---
 title: "DS3 projects"
 author: "Matthew Munoz and Fabio Pecora"
-output: html_document
+output:
+  html_document:
+    code_folding: hide
 date: "2024-06-24"
 ---
 
-# Anti-Immigrant Rhetoric and ICE Reporting Interest: Evidence from a Large-Scale Study of Web Search Data Replication
+# **Anti-Immigrant Rhetoric and ICE Reporting Interest: Evidence from a Large-Scale Study of Web Search Data Replication and Extension**
 
-### loading packages
+**1) Trends and functions**\
+[Functions for table and figure replication](#functions-for-table-and-figure-replication)\
+[Google trend terms](#google-trend-terms)\
+[Positive Google trend terms](#positive-google-trend-terms)\
 
-```{r loading data}
+**2) Original Data**\
+[Original data plot](#original-plot)\
+[Original data ordinary least square regression](#original-data-ordinary-least-square-regression)
+
+**3) Gathered Data**\
+[Gathered data plot](#gathered-data-plot)\
+[Gathered data ordinary least square regression](#gathered-data-ordinary-least-square-regression)
+
+**4) Topic Model**\
+[Topic Model](#topic-model)\
+[Media coverage and reporting search trends](#media-coverage-and-reporting-search-trends)
+
+**5) Extension**\
+[Extension](#extension)\
+[Proportion of fear vs positive search terms](#proportion-of-fear-vs-positive-search-terms)\
+[Plotting proportion of fear vs positive search terms by presidency](#plotting-proportion-of-fear-vs-positive-search-terms-by-presidency)\
+[Displaying fear and positive searches by state between 2004 and 2020](#displaying-fear-and-positive-searches-by-state-between-2004-and-2020)
+
+## Loading libraries
+
+```{r loading data,warning=FALSE,message=FALSE, class.source = "fold-show"}
 library(tidyverse)
 library(zoo)
 library(stm)
-library(ggplot2)
 library(maps)
-library(dplyr)
 library(stringr)
 ```
 
-## Original data set to run by default
+------------------------------------------------------------------------
 
-### If original research data is desired change the eval = FALSE in the following chunk then alter the subsequent chuck to eval = TRUE.
+## Functions for table and figure replication {#functions-for-table-and-figure-replication}
 
-```{r download csv files eval=TRUE}
-report <- read.csv("google-trends data/replicate data/report.csv")
-crime <- read.csv("google-trends data/replicate data/crime.csv")
-welfare <- read.csv("google-trends data/replicate data/welfare.csv")
+#### Date manipulation
 
-colnames(report) <- c("ym" ,"trends")
-colnames(crime) <- c("ym","trends")
-colnames(welfare) <- c("ym","trends")
-```
-
-```{r only for the og dataset eval=FALSE}
-report <- read.csv("google-trends data/original research data/report.csv")
-crime <- read.csv("google-trends data/original research data/crime.csv")
-welfare <- read.csv("google-trends data/original research data/welfare.csv")
-
-colnames(report) <- c("y", "m" ,"trends")
-colnames(crime) <- c("y", "m","trends")
-colnames(welfare) <- c("y", "m","trends")
-
-report$ym <- with(report, sprintf("%d-%02d", y, m))
-crime$ym <- with(crime, sprintf("%d-%02d", y, m))
-welfare$ym <- with(welfare, sprintf("%d-%02d", y, m))
-
-
-report <- report |> select(ym, trends)
-crime <- crime |> select(ym, trends)
-welfare <- welfare |> select(ym, trends)
-```
-
-### functions for table and figure replication
+The current Google trends only includes the year-month. This functions adds a day component to make it year-month-date while also converting the string to a date to allow later partitions to be more accurate.
 
 ```{r function to change year-month to year-month-date}
 add_date <- function(df) {
-  # formats the data to have the date as a date 
+  # formats the data to have the date as a date that includes day
   df <- df |>  
     mutate(ymd=as.Date(paste(ym, "-20", sep=""))) |> 
     select(-ym)
   }
 ```
 
+#### Inserting presidential terms
+
+This function further simplifies the partitioning by adding a column that distinguishes which president is serving on that date.
+
 ```{r function to add president column}
 add_pres <- function(df) {
+  # variables to partition the presidential terms 
   bush_end <- as.Date("2009-01-20")
   trump_start <- as.Date("2017-01-20")
   
+  # add the corresponding term to that month
   df$president <- 
-    ifelse(df$ymd >= bush_end & df$ymd < trump_start, "obama", 
-           ifelse(df$ymd < bush_end, "bush", "trump")) 
+    ifelse(df$ymd >= bush_end & df$ymd < trump_start, "Obama", 
+           ifelse(df$ymd < bush_end, "Bush", "Trump")) 
   
   return(df)
 }
 ```
 
+#### Categorizing presidential terms
+
+Creates three new columns, one for each president, that holds dummy variables (i.e. 0 or 1) to allow the linear model to run effectively.
+
 ```{r function to add zeros and ones}
 zero_or_one <- function(df) {
+  # adds three columns, one for each president and subsequently add a 1 when it is their presidency  
   df$bush <- 
     ifelse(df$president == "bush", 1, 0) 
   df$obama <- 
@@ -89,43 +96,153 @@ zero_or_one <- function(df) {
 }
 ```
 
+#### Plot 4 recreation
+
+Recreation of the point plot with linear smoothing for easier understanding.The plot separates the points and lines by presidency.
+
 ```{r function to plot figure 4}
-plot_4 <- function(df, start, end) {
+plot_4 <- function(df, start, end, title) {
+  # recreated figure 4 from the paper 
   df |>
     ggplot(aes(x = ymd, y = trends, color = president)) +
     geom_point(shape = 1) +
     geom_smooth(method = "lm", se = FALSE) + 
     ylim(start, end) +
     xlab("Year") +
-    ylab("Google Trends")
+    ylab("Google Trends") +
+    ggtitle(title)
 }
 ```
 
-## runnning above gunction
+------------------------------------------------------------------------
 
-```{r add date to data frames}
+### Google trend terms {#google-trend-terms}
+
+**Report**: report immigrant+report immigration+report illegals+report illegal alien+report to ice\
+**Crime**: immigrant crime+immigrant criminal+immigrant murder+immigrant kill\
+**Welfare**: immigrant welfare+immigrant cost+immigrant benefits\
+
+------------------------------------------------------------------------
+
+### Loading original data
+
+The original data used in the paper is loaded and manipulated to include the correct date, presidential terms, and dummy variables.
+
+```{r loading and processing original data}
+# loading original data
+report_og <- read.csv("google-trends data/original research data/google_trends_report.csv")
+crime_og <- read.csv("google-trends data/original research data/google_trends_crime.csv")
+welfare_og <- read.csv("google-trends data/original research data/google_trends_welfare.csv")
+
+# inserting proper column names
+colnames(report_og) <- c("y", "m" ,"trends")
+colnames(crime_og) <- c("y", "m","trends")
+colnames(welfare_og) <- c("y", "m","trends")
+
+# converting to reproducible format
+report_og$ym <- with(report_og, sprintf("%d-%02d", y, m))
+crime_og$ym <- with(crime_og, sprintf("%d-%02d", y, m))
+welfare_og$ym <- with(welfare_og, sprintf("%d-%02d", y, m))
+
+# keep only necessary columns
+report_og <- report_og |> select(ym, trends)
+crime_og <- crime_og |> select(ym, trends)
+welfare_og <- welfare_og |> select(ym, trends)
+
+# uses the add_date function
+report_og <- add_date(report_og) 
+crime_og <- add_date(crime_og) 
+welfare_og <- add_date(welfare_og) 
+
+# uses the add_pres function
+report_og <- add_pres(report_og)
+crime_og <- add_pres(crime_og) 
+welfare_og <- add_pres(welfare_og)
+
+# uses the zero_or_one function, which is the final desired form
+report_og <- zero_or_one(report_og)
+crime_og <- zero_or_one(crime_og) 
+welfare_og <- zero_or_one(welfare_og)
+```
+
+------------------------------------------------------------------------
+
+## Original plot {#original-plot}
+
+```{r og trends plot,message=FALSE}
+plot_4(report_og, 0, 100, "Report")
+plot_4(crime_og, 0, 100, "Crime")
+plot_4(welfare_og, 0, 100, "Welfare")
+```
+
+**Figure 1.** *Original Immigration searches by administration*\
+For all three sets of anti-immigrant terms, searches increased on Google after Trump’s inauguration speech. There was also a spike in all three sets of terms in the months immediately after the inauguration.
+
+------------------------------------------------------------------------
+
+## Original data ordinary least square regression {#original-data-ordinary-least-square-regression}
+
+```{r og regression model}
+fit.report_og <- lm(trends~ymd+bush+trump+obama, data=report_og |> filter(trends > 0))
+fit.crime_og <- lm(trends~ymd+bush+trump+obama, data=crime_og |> filter(trends > 0))
+fit.welfare_og <- lm(trends~ymd+bush+trump+obama, data=welfare_og |> filter(trends > 0))
+summary(fit.report_og)
+summary(fit.crime_og)
+summary(fit.welfare_og)
+```
+
+**Table 1.** *Original immigration searches by presidential administration*\
+After accounting for the linear time trend, there was still a clear increase in immigrant reporting searches after Trump’s inauguration. The regression is OLS on monthly search interest.
+
+------------------------------------------------------------------------
+
+## Loading gathered Google trends data
+
+The gathered is loaded and manipulated to include the correct date, presidential terms, and dummy variables
+
+```{r loading and processing gathered data }
+# loading gathered data
+report <- read.csv("google-trends data/replicate data/report.csv")
+crime <- read.csv("google-trends data/replicate data/crime.csv")
+welfare <- read.csv("google-trends data/replicate data/welfare.csv")
+
+# inserting proper column names
+colnames(report) <- c("ym" ,"trends")
+colnames(crime) <- c("ym","trends")
+colnames(welfare) <- c("ym","trends")
+
+# uses the add_date function
 report <- add_date(report) 
 crime <- add_date(crime) 
 welfare <- add_date(welfare) 
-```
 
-```{r add president column to each vector}
+# uses the add_pres function
 report <- add_pres(report)
 crime <- add_pres(crime) 
 welfare <- add_pres(welfare)
-```
 
-```{r add president column to each vector}
+# uses the zero_or_one function, which is the final desired form
 report <- zero_or_one(report)
 crime <- zero_or_one(crime) 
 welfare <- zero_or_one(welfare)
 ```
 
-```{r trends plot}
-plot_4(report, 0, 100)
-plot_4(crime, 0, 100)
-plot_4(welfare, 0, 100)
+------------------------------------------------------------------------
+
+## Gathered data plot {#gathered-data-plot}
+
+```{r trends plot,warning=FALSE,message=FALSE}
+plot_4(report, 0, 100, "Report")
+plot_4(crime, 0, 100, "Crime")
+plot_4(welfare, 0, 100, "Title")
 ```
+
+**Figure 2.** *Gathered data immigration searches by administration*\
+The overall trends of the later administrations are similar to the original data. However, the bush administration is visibly different. After looking into the reason it turn out that the original data has several point that display searches where the gathered data has a zero value. We came to the conclusion that the two most probable reasons are missing values in the most recent searches of those terms on Google or erroneous gathered date. Even with these mismatching values the overall trend is similar to the original data.
+
+------------------------------------------------------------------------
+
+## Gathered data ordinary least square regression {#gathered-data-ordinary-least-square-regression}
 
 ```{r regression model}
 fit.report <- lm(trends~ymd+bush+trump+obama, data=report |> filter(trends > 0))
@@ -136,7 +253,41 @@ summary(fit.crime)
 summary(fit.welfare)
 ```
 
+**Table 2.** *Gathered data immigration searches by presidential administration*\
+The values from the dependent variables in the self gathered data has the trends seen in the original data. However, the difference in some of the data points mentioned in *Figure 2* create a variation in the trends from the gathered data.
+
+------------------------------------------------------------------------
+
+## Topic Model {#topic-model}
+
+A structural topic model was used to measure changes in media coverage of immigrant-related issues before and after the 2016 election. The measure of the coverage was done on news networks CNN, FOX, and MSNBC. The topic model gather data relating to 30 different topics, news networks used, duration of the coverage, transcript, etc.\
+*--For more clarification on this data please refer to page 9 of the research paper*
+
+### Topic model plot function
+
+The function replicates the topic model plots used in the original paper
+
+```{r function to plot topic model}
+topic_plot <- function(df, lable) {
+df |> ungroup() |> 
+  group_by(channel, time) |> 
+  ggplot(aes(x = yearmonth, y = summation, color = channel, group = interaction(channel, time))) + 
+  geom_vline(xintercept = as.numeric(date1), linetype = "dashed", color = "black") +
+  geom_vline(xintercept = as.numeric(date2), linetype = "dashed", color = "black") +
+  geom_point() + geom_smooth( se=FALSE) + scale_color_manual(values = my_colors) +
+  theme(axis.title.x = element_blank(), legend.position = "bottom", legend.title = element_blank()) +
+  ylab(lable) 
+}
+```
+
+------------------------------------------------------------------------
+
+### Preparing topic model data
+
+Loading, mutating, correctly formatting the date and summarizing the topic model data for plotting
+
 ```{r topic model}
+# Loads the topic model
 load("TopicModel.RData")
 document_topics <- make.dt(immigrFit, meta = out$meta)
 topic_terms <- t(exp(immigrFit$beta$logbeta[[1]]))
@@ -144,114 +295,169 @@ rownames(topic_terms) <- out$vocab
 colnames(topic_terms) <- sprintf("Topic%d", 1:ncol(topic_terms))
 ```
 
-```{r prep for figures 2 and 3}
+```{r prep for figures 2 and 3,warning=FALSE,message=FALSE}
+# converts the date to appropriate format
 document_topics <- document_topics |> 
    mutate(date = as.Date(date, format = "%Y-%m-%d"),yearmonth = ym(format(date, "%Y-%m")))
 
+# grouping and summarizing based on date
 time_line <- document_topics |> 
   select(time, yearmonth) |> 
   group_by(time) |> 
   summarize(yearmonth = min(yearmonth))
 
+# variables holding the date for partitioning
 date1 <- as.Date("2015-06-01")
 date2 <- as.Date("2017-01-01")
 
+# variable to ensure proper coloring of plot
 my_colors <- c("magenta", "red3", "blue")
 ```
 
-```{r creating figure 2}
+### Preparing data for topic model plot
+
+Separating the topic model data based on topic(i.e Topics 1 and 3 were used for crime topics while Topic 13 was used for welfare topics)
+
+```{r data preperation to plot,warning=FALSE,message=FALSE}
+# grouping and filtering by news channel
 plot_2_table <- document_topics |> 
   select(channel, duration, yearmonth, time) |> group_by(yearmonth, channel, time) |>
   summarize(summation=sum(duration)) |> arrange(summation) 
  
-
-plot_2_table |> ungroup() |> 
-  group_by(channel, time) |> 
-  ggplot(aes(x = yearmonth, y = summation, color = channel, group = interaction(channel, time))) + 
-  geom_vline(xintercept = as.numeric(date1), linetype = "dashed", color = "black") +
-  geom_vline(xintercept = as.numeric(date2), linetype = "dashed", color = "black") +
-  geom_point() + geom_smooth( se=FALSE) + scale_color_manual(values = my_colors) +
-  theme(axis.title.x = element_blank(), legend.position = "bottom", legend.title = element_blank()) +
-  ylab("Num Monthly\nImmigration Segs") 
-
+# grouping and filtering by news channel and crime rhetoric
 plot_3a_table <- document_topics |> 
   select(Topic1, Topic3, channel, duration, yearmonth, time) |> group_by(yearmonth, channel, time) |>
   summarize(summation=sum(duration*Topic1 + duration*Topic3)) |> arrange(summation) 
- 
 
-plot_3a_table |> ungroup() |> 
-  group_by(channel, time) |> 
-  ggplot(aes(x = yearmonth, y = summation, color = channel, group = interaction(channel, time))) + 
-  geom_vline(xintercept = as.numeric(date1), linetype = "dashed", color = "black") +
-   geom_vline(xintercept = as.numeric(date2), linetype = "dashed", color = "black") +
-  geom_point() + geom_smooth( se=FALSE) + scale_color_manual(values = my_colors) +
-  theme(axis.title.x = element_blank(), legend.position = "bottom", legend.title = element_blank()) +
-  ylab("Immiger + Crime\nNews Coverage") 
-
-
+# grouping and filtering by news channel and welfare rhetoric
 plot_3b_table <- document_topics |> 
   select(Topic13, channel, duration, yearmonth, time) |> group_by(yearmonth, channel, time) |>
   summarize(summation=sum(duration*Topic13)) |> arrange(summation) 
-
-plot_3b_table |> ungroup() |> 
-  group_by(channel, time) |> 
-  ggplot(aes(x = yearmonth, y = summation, color = channel, group = interaction(channel, time))) + 
-  geom_vline(xintercept = as.numeric(date1), linetype = "dashed", color = "black") +
-   geom_vline(xintercept = as.numeric(date2), linetype = "dashed", color = "black") +
-  geom_point() + geom_smooth( se=FALSE) + scale_color_manual(values = my_colors) +
-    theme(axis.title.x = element_blank(), legend.position = "bottom", legend.title = element_blank()) +
-  ylab("Immiger Welfare\nNew Coverage") 
 ```
 
+```{r topic model plot,warning=FALSE,message=FALSE}
+topic_plot(plot_2_table, "Num Monthly\nImmigration Segs")
+topic_plot(plot_3a_table, "Immiger + Crime\nNews Coverage")
+topic_plot(plot_3b_table , "Immiger Welfare\nNew Coverage")
+```
+
+*The dotted black lines separate key moments in Trumps administration, the first when the Trump campaign began and the second is the start of his presidency*
+
+**Figure 3.** *Immigration news segments*\
+Their were similar immigration coverage over the course of the Trump campaign and presidency in both MSNBC and FOX, However, Fox always held larger amount of immigration news coverage during the Trump campaign and administration. In fact, shortly after the Trump took office in January of 2017 the immigration news more than double on the conservative news channel. This supports the hypothesis found in the paper, particularly No. 3 which indicates "People will have more interest in reporting immigrants when exposed to fear cues about immigrants."
+
+------------------------------------------------------------------------
+
+## Recreating media coverage and reporting search trends
+
+Selecting, filtering, and summarizing the daily search data and then joining it with the topic model for further examination
+
 ```{r importing daily data}
+# importing daily trends data
 daily <- read.csv("google-trends data/replicate data/gt_report_daily.csv") |> select(date, search, search_adj) |>  mutate(date=as.Date(date))
 ```
 
-```{r}
+```{r filtering for certain topics}
+# filtering and selecting only the most influential topics with regard to reporting, crime, and welfare
 filtered_topics <- document_topics |> 
   select(date, channel, duration, Topic1, Topic3, Topic13) |> group_by(date) |> 
   summarize(duration=sum(duration), Topic1and3=sum(Topic1 + Topic3), Topic13=sum(Topic13))
 ```
 
-```{r}
+```{r joning topic news coverage and searches}
+# obtaining the searches happening during the particular topic new coverage
 filtered_topics <- filtered_topics |> inner_join(daily, join_by(date)) 
-
 ```
 
-```{r}
-  bush_end <- as.Date("2009-01-20")
-  trump_start <- as.Date("2017-01-20")
-  
-  filtered_topics$president <- 
-    ifelse(filtered_topics$date >= bush_end & filtered_topics$date < trump_start, "obama", 
-           ifelse(filtered_topics$date < bush_end, "bush", "trump")) 
-  
-  filtered_topics$trump <- 
-    ifelse(filtered_topics$president == "trump", TRUE, FALSE) 
-  
-  filtered_topics <- filtered_topics %>%
-  mutate(month = month(date, label = TRUE, abbr = FALSE))
-  
-  filtered_topics <- filtered_topics %>%
-  mutate(day_of_week = wday(date, label = TRUE, abbr = FALSE))
-  
+------------------------------------------------------------------------
 
+## Media coverage and reporting search trends {#media-coverage-and-reporting-search-trends}
 
+Creating a liner ordinary least square regression model for the daily searches and topics during the Trump administration
+
+```{r obtaining the linear model to undertand trends in the data}
+# dates for partitioning 
+bush_end <- as.Date("2009-01-20")
+trump_start <- as.Date("2017-01-20")
+  
+# include presidencies on row date
+filtered_topics$president <- 
+  ifelse(filtered_topics$date >= bush_end & filtered_topics$date < trump_start, "obama", 
+       ifelse(filtered_topics$date < bush_end, "bush", "trump")) 
+  
+# create true/false columns, one for each presidency, for the linear model
+filtered_topics$trump <- 
+  ifelse(filtered_topics$president == "trump", TRUE, FALSE) 
+  
+filtered_topics <- filtered_topics %>%
+mutate(month = month(date, label = TRUE, abbr = FALSE))
+  
+filtered_topics <- filtered_topics %>%
+mutate(day_of_week = wday(date, label = TRUE, abbr = FALSE))
+  
+# create the linear model and fit the data
 fit.coverage <- lm(search_adj~duration+Topic1and3+Topic13+trump+date+month+day_of_week, data=filtered_topics)
 summary(fit.coverage)
 ```
 
-```{r}
-vs <- read.csv("fearvssuccess.csv")
-map <- read.csv("fearvssuccess_geo.csv")
+**Table 3.** *Media coverage and reporting searches*\
+The reproduced regression is not the same one seen in the paper. Although, it does show similar correlations and trend, which show that the coverage of unauthorized immigrant crimes and welfare usage is positively correlated with higher searches for immigrant reporting.
 
+------------------------------------------------------------------------
+
+## Extension: {#extension}
+
+##### 1) How searches regarding immigrant success stories and immigrant aid changed over the same time
+
+##### 2) How fear vs positive searches vary thorugh the different states
+
+------------------------------------------------------------------------
+
+### Positive Google trend terms {#positive-google-trend-terms}
+
+**Positive**(i.e. positive terms): immigrant success + immigrant contribution + benefits of immigration + help immigrant
+
+------------------------------------------------------------------------
+
+## Proportion of fear vs positive search terms {#proportion-of-fear-vs-positive-search-terms}
+
+```{r loading fear vs success and metro are data for both terms}
+vs <- read.csv("google-trends data/FvsS/fearvssuccess.csv")
+map <- read.csv("google-trends data/FvsS/fearvssuccess_geo.csv")
+
+# changing column names to be easier to work with
 colnames(vs) <- c("ym" ,"fear", "success")
+```
 
+```{r plotting fear and positive search terms over time}
+vs <- vs %>%
+  mutate(ymd = ymd(paste0(ym, "-01")))
+
+ggplot(data = vs, aes(x = ymd)) +
+  geom_line(aes(y = fear, color = "fear")) +
+  geom_line(aes(y = success, color = "positive")) +
+  labs(y = "Values", color = "Legend") +
+  theme_minimal() +
+  xlab("Year") +
+  ylab("Number of Searches") +
+  ggtitle("Fear and Positive search terms over time")
+  
+```
+
+**Figure 4.** *Fear and positive search terms over time*\
+The plot shows how fear based searches compare to positive based searches over time. It displays non drastic changes regardless of the time, with the only seeming outlier happening in June 2018. This is when the Trump administration's "zero tolerance" policy, which resulted in the separation of children from their parents at the U.S.-Mexico border, was a major news story. This policy led to widespread public outrage and intense media coverage. In response to the public outcry, President Trump signed an executive order on June 20, 2018, to end family separations.
+
+------------------------------------------------------------------------
+
+## Plotting proportion of fear vs positive search terms by presidency {#plotting-proportion-of-fear-vs-positive-search-terms-by-presidency}
+
+```{r proprtion of fear vs positive searches for each presidency}
+# obtaining proportion of searches without the visible oultier from Figure 4
 prop_no_outlier <- vs |> add_date() |> add_pres() |> zero_or_one() |> 
   mutate(proportion=(fear/(success+fear))) |> 
            filter(fear > 0 & success > 0) |>
            group_by(president) |> summarise(mean=mean(proportion))
-
+# obtaining proportion of searches
 prop_outlier <- vs |> add_date() |> add_pres() |> zero_or_one() |> 
   mutate(proportion=(fear/(success+fear))) |> 
            filter(fear > 0 & success > 0 & ymd != "2018-06-20") |> 
@@ -259,44 +465,31 @@ prop_outlier <- vs |> add_date() |> add_pres() |> zero_or_one() |>
            summarise(mean=mean(proportion))
 ```
 
-```{r}
-
+```{r plot of proportion for each presidency}
+# plot with outlier
 ggplot(prop_outlier, aes(x = president, y = mean, fill = president)) +
   geom_bar(stat = "identity", width = 0.5) +
-  labs(
-    title = "Mean Values of Presidents' Immigration Policies",
-    x = "President",
-    y = "Mean Value"
-  )
+  ggtitle("Proportion of searches during administrations with oultier") +
+    xlab("President") +
+    ylab("Proportion Mean Value")
 
+# plot without outlier
 ggplot(prop_no_outlier, aes(x = president, y = mean, fill = president)) +
   geom_bar(stat = "identity", width = 0.5) +
-  labs(
-    title = "Mean Values of Presidents' Immigration Policies",
-    x = "President",
-    y = "Mean Value"
-  )
-
-
+    ggtitle("Proportion of searches during administrations without outlier") +
+    xlab("President") +
+    ylab("Proportion Mean Value")
 ```
 
-```{r}
-vs <- vs %>%
-  mutate(ymd = ymd(paste0(ym, "-01")))
+**Figure 5.** *Proportion of fear vs positive searches during each presidency*\
+The proportion of fear vs positive searches on Google seem to be 2 to 1 regardless of the presidency. In fact, even when removing the only visible outlier in the trend the proportions are about the same. Obama,the only liberal president viewed here, actually had a slightly higher proportion of searches, not enough to be significant, but enough to show that immigrant search proportion tends to stay balanced regardless of the rhetoric.
 
-ggplot(data = vs, aes(x = ymd)) +
-  geom_line(aes(y = fear, color = "fear")) +
-  geom_line(aes(y = success, color = "success")) +
-  labs(y = "Values", color = "Legend") +
-  theme_minimal()
-  
-```
+------------------------------------------------------------------------
 
+## Displaying fear and positive searches by state between 2004 and 2020 {#displaying-fear-and-positive-searches-by-state-between-2004-and-2020}
 
-
-```{r}
-
-
+```{r plotting a map fo search trends, ,warning=FALSE,}
+# Pre-processing map data which includes metro area
 map <- map %>%
   mutate(
     state = str_extract(Metro, "[A-Z]{2}$"),
@@ -305,6 +498,7 @@ map <- map %>%
   )
 
 
+# state abbreviation to correlate with the ones given and mutate into full state names for accurate plotting
 state_abbreviations <- data.frame(
   abbreviation = c(
     "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
@@ -327,32 +521,32 @@ state_abbreviations <- data.frame(
   ))
 )
 
-
+# mutating data
 map2 <- map %>%
   left_join(state_abbreviations, by = c("state" = "abbreviation")) %>%
   rename(region = state.y)
 
+# obtaining and converting necessary map data
 states_map <- map_data("state")
-
-
 map_data <- left_join(states_map, map2, by = "region") |>  mutate(success = ifelse(is.na(success), 0, success))
 
-head(map_data)
-
-
+# plotting fear searches
 ggplot(map_data, aes(x = long, y = lat, group = group, fill = fear)) +
   geom_polygon(color = "black") +
   scale_fill_gradient(name = "Fear (%)", low = "lightblue", high = "darkblue", na.value = "grey90") +
   coord_fixed(1.3) +
-  labs(title = "Fear Percentage by State") +
-  theme_minimal()
+  ggtitle("Fear Percentage by State") +
+  theme(axis.title = element_blank(), axis.text =  element_blank(),, axis.ticks =  element_blank(), panel.background = element_blank())
 
+# plotting positive searches
 ggplot(map_data, aes(x = long, y = lat, group = group, fill = success)) +
   geom_polygon(color = "black") +
-  scale_fill_gradient(name = "Success (%)", low = "lightblue", high = "darkblue", na.value = "grey90") +
+  scale_fill_gradient(name = "Positive (%)", low = "lightblue", high = "darkblue", na.value = "grey90") +
   coord_fixed(1.3) +
-  labs(title = "Fear Percentage by State") +
-  theme_minimal()
+  ggtitle("Positive Percentage by State") +
+  theme(axis.title = element_blank(), axis.text =  element_blank(),, axis.ticks =  element_blank(), panel.background = element_blank())
 
 ```
 
+**Figure 6.** *Search percentages by state*\
+The plots display the percentage of fear and positive searches made by each state. The positive search percentages are simply an inversion on the fear searches. However, the second plot was made to more clearly see the correlation of searches by state. Upon first inspection nothing can be definitively seen in the plot other than more conservative states have higher fear based searches but not all. Their are a couple of liberal states that are also seen with higher fear searches. A deeper dive would have to be done to glean more information from the plot. For example, a look at the political divide in each state, population of immigrants by state, or perhaps a better view at the distribution over time instead of average searcvhes of a set of time.
